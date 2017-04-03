@@ -15,10 +15,11 @@ app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 
 // routes ============================================================
 app.get('/api/obterfrutas', function (req, res) {
-    var posts = [{ID: 1, Nome: "Abacaxi", Dica: "Lorem ipusm"},
-                 {ID: 2, Nome: "Abacate", Dica: "Lorem ipusm"},
-                 {ID: 3, Nome: "Laranja", Dica: "Lorem ipusm"}];
-
+    var posts = [{frutaId: 1, nome: "Abacaxi", dica: "Lorem ipusm", nomeArquivo: "1280px-600px_HEX-008A79_rectangle_on_HEX-FEFCF0.svg.png"},
+                 {frutaId: 2, nome: "Abacate", dica: "Lorem ipusm", nomeArquivo: "1280px-600px_HEX-008A79_rectangle_on_HEX-FEFCF0.svg.png"},
+                 {frutaId: 3, nome: "Laranja", dica: "Lorem ipusm", nomeArquivo: "1280px-600px_HEX-008A79_rectangle_on_HEX-FEFCF0.svg.png"}];
+//http://revistagloborural.globo.com/Revista/GloboRural/foto/0,,69789135,00.jpg
+//https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/600px_HEX-008A79_rectangle_on_HEX-FEFCF0.svg/
     res.json(posts);
 });
 
