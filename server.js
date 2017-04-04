@@ -20,30 +20,14 @@ var connStr = process.env.COMO_MYSQL_CONNSTR;
 var connection = mysql.createConnection(connStr);
 connection.connect(function(err) {if (err) {console.error('error connecting: ' + err.stack);return;}console.log('connected as id ' + connection.threadId);});
 var sequelize = new Sequelize(connStr, {define: {timestamps: false,freezeTableName: true}});
+
 var Dica = sequelize.define('dica', {
-    idDica: {
-        type: Sequelize.INTEGER,
-        field: 'idDIca',
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    nomeFruta: {
-        type: Sequelize.STRING,
-        field: 'nomeFruta',
-        allowNull: false
-    },
-    dica: {
-        type: Sequelize.STRING,
-        field: 'dica',
-        allowNull: false
-    },
-    nomeArquivo: {
-        type: Sequelize.STRING,
-        field: 'nomeArquivo',
-        allowNull: false
-    }
-	}, { tableName: 'Dica' } 
+    idDica: {type: Sequelize.INTEGER,field:'idDIca',allowNull:false,primaryKey:true,autoIncrement:true},
+    nomeFruta: {type: Sequelize.STRING,field:'nomeFruta',allowNull:false},
+    dica: {type: Sequelize.STRING,field:'dica',allowNull:false},
+    nomeArquivo: { type: Sequelize.STRING,field:'nomeArquivo',allowNull:false}
+	}, 
+    { tableName: 'Dica' } 
 );
 
 // routes ============================================================
