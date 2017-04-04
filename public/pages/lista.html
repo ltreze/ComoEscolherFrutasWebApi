@@ -1,0 +1,22 @@
+<h2>Lista</h2>
+
+<br/><a class="btn" ng-href="/upsert">Nova</a><a class="btn" ng-href="/imagens">Imagens</a><br/><br/>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome fruta</th>
+            <th>Descrição</th>
+            <th>Imagem</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="dica in dicas">
+            <td>{{ dica.idDica }}</td>
+            <td>{{ dica.nomeFruta }}</td>
+            <td>{{ dica.descricao }}</td>
+            <td><img ng-src="/uploads/{{ dica.nomeArquivo }}" /></td>
+        </tr>
+    </tbody>
+</table>

@@ -5,6 +5,9 @@ var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var mysql = require('mysql');
 var Sequelize = require('sequelize');
+var multer = require('multer');
+var fs = require('fs');
+var async = require('async');
 
 // configuration =====================================================
 var app = express();
@@ -14,6 +17,7 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ 'extended': 'true' }));
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
+var upload = multer({ dest: 'uploads/' })
 
 //ORM
 var connStr = process.env.COMO_MYSQL_CONNSTR;
@@ -24,14 +28,25 @@ var sequelize = new Sequelize(connStr, {define: {timestamps: false,freezeTableNa
 var Dica = sequelize.define('dica', {
     idDica: {type: Sequelize.INTEGER,field:'idDIca',allowNull:false,primaryKey:true,autoIncrement:true},
     nomeFruta: {type: Sequelize.STRING,field:'nomeFruta',allowNull:false},
-    dica: {type: Sequelize.STRING,field:'dica',allowNull:false},
+    descricao: {type: Sequelize.STRING,field:'descricao',allowNull:false},
     nomeArquivo: { type: Sequelize.STRING,field:'nomeArquivo',allowNull:false}
 	}, 
     { tableName: 'Dica' } 
 );
 
 // routes ============================================================
+app.post('/upload', upload.single('fruta'), function (req, res, next) {
+
+	console.log('*** upload ***');
+    console.log('req.body');
+    console.log(req.body);
+    console.log('');
+
+    res.json({});
+})
+
 app.get('/api/obterdicas', function (req, res) {
+    console.log('********      obterdicas         ********');
 
     Dica
         .findAll()
@@ -54,14 +69,57 @@ app.post('/api/salvardica', function (req, res) {
 	var proximoIdDica = dicas[dicas.length-1].frutaId + 1;
 	console.log(proximoIdDica);
 	dicas.push({frutaId: proximoIdDica, nome: req.body.nomeFruta, dica: req.body.dica, nomeArquivo: req.body.nomeArquivo});
-	
-	
+
     res.send({ status: 'ok'});
 });
 
-app.get('/fetch', function (req, res) {
-    res.send({ status: 'ok'});
+app.get('/', function(req,res){
+    res.sendfile('./public/index.html'); 
 });
+
+app.get('/fetch', function (req, res) {
+    res.send({ status: 'ok'}); 
+});
+
+app.get('/api/imagens', function(req, res){
+    console.log(' - - - - - - - - imagens - - - - - - - - ');
+    
+    console.log('__dirname');
+    console.log(__dirname);
+
+    var todasImagens = [];
+
+    const fs = require('fs');
+    fs.readdir(__dirname + '/public/uploads', (err, files) => {
+
+        console.log('TODOS OS ARQUIVOS DO DIRETORIO');console.log(files);console.log('');
+
+        async.series([
+            function filesForEach(callback){
+
+                files.forEach(file => {
+                    var img = { caminhoArquivo: file };
+
+                    console.log('img');console.log(img);
+
+                    todasImagens.push(img);
+                });
+                callback();
+            }, 
+            function retorna(callback){
+                callback();
+            }
+        ], 
+        function(err) { 
+            if (err != null) return res.status(500).send(err);
+            console.log('todasImagens');
+            console.log(todasImagens);
+            console.log('');
+            res.json(todasImagens);
+        });
+    });
+});
+
 
 // listen ============================================================
 app.listen(app.get('port'), function () {

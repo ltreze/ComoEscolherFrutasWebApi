@@ -1,0 +1,16 @@
+<h2>Imagens</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Imagem</th>
+            <th>Ação</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="imagem in imagens">
+            <td><img ng-src="\uploads\{{ imagem.caminhoArquivo }}" /></td>
+            <td>Deletar</td>
+        </tr>
+    </tbody>
+</table>
