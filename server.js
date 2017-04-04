@@ -3,6 +3,7 @@
 var express = require('express');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
+var mysql = require('mysql');
 var Sequelize = require('sequelize');
 
 // configuration =====================================================
@@ -15,14 +16,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 
 //ORM
-var connStr = process.env.CF_MYSQL_CONNSTR;
+var connStr = process.env.COMO_MYSQL_CONNSTR;
 var connection = mysql.createConnection(connStr);
 connection.connect(function(err) {if (err) {console.error('error connecting: ' + err.stack);return;}console.log('connected as id ' + connection.threadId);});
 var sequelize = new Sequelize(connStr, {define: {timestamps: false,freezeTableName: true}});
 var Dica = sequelize.define('dica', {
-    dicaId: {
+    idDica: {
         type: Sequelize.INTEGER,
-        field: 'dicaId',
+        field: 'idDIca',
         allowNull: false,
         primaryKey: true,
         autoIncrement: true
@@ -42,21 +43,25 @@ var Dica = sequelize.define('dica', {
         field: 'nomeArquivo',
         allowNull: false
     }
-	}, { tableName: 'Dica' }
+	}, { tableName: 'Dica' } 
 );
-
-
-
-// data
-var dicas = [{dicaId: 1, nomeFruta: "Abacaxi", dica: "Lorem ipusm", nomeArquivo: "1280px-600px_HEX-008A79_rectangle_on_HEX-FEFCF0.svg.png"},
-             {dicaId: 2, nomeFruta: "Abacate", dica: "Lorem ipusm", nomeArquivo: "1280px-600px_HEX-008A79_rectangle_on_HEX-FEFCF0.svg.png"},
-             {dicaId: 3, nomeFruta: "Laranja", dica: "Lorem ipusm", nomeArquivo: "1280px-600px_HEX-008A79_rectangle_on_HEX-FEFCF0.svg.png"}];
 
 // routes ============================================================
 app.get('/api/obterdicas', function (req, res) {
-	//http://revistagloborural.globo.com/Revista/GloboRural/foto/0,,69789135,00.jpg
-	//https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/600px_HEX-008A79_rectangle_on_HEX-FEFCF0.svg/
-    res.json(dicas);
+
+    Dica
+        .findAll()
+        .then(function (dicas) {
+
+            console.log('***************************************');
+            console.log('***     OBTENDO DICAS');
+        	console.log('***');
+        	console.log('***    ' + JSON.stringify(dicas));
+        	console.log('***');
+            console.log('***************************************');
+
+            res.json(dicas);
+        });
 });
 
 app.post('/api/salvardica', function (req, res) {
@@ -69,6 +74,7 @@ app.post('/api/salvardica', function (req, res) {
 	
     res.send({ status: 'ok'});
 });
+
 app.get('/fetch', function (req, res) {
     res.send({ status: 'ok'});
 });
