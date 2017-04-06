@@ -8,6 +8,9 @@ var Sequelize = require('sequelize');
 var multer = require('multer');
 var fs = require('fs');
 var async = require('async');
+var path = require('path');
+var formidable = require('formidable');
+var async = require('async');
 
 // configuration =====================================================
 var app = express();
@@ -17,106 +20,202 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ 'extended': 'true' }));
 app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
-var upload = multer({ dest: 'uploads/' })
+//configuracoes de upload
+var storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        //console.log('STORAGE > DESTINATION'); console.log(req.body); console.log('');
+        callback(null, './uploads');
+    },
+    filename: function (req, file, callback) {
+        //console.log('STORAGE > FILENAME'); console.log(file); console.log('');
+        //console.log('req.body'); console.log(req.body); console.log('');
+        //var usuarioId = file.originalname.split('.')[0];
+        //var parteB = file.originalname.split('.')[file.originalname.split('.').length - 1];
+        //var nomeArquivo = file.fieldname + '_' + usuarioId + '_' + Date.now() + '.' + parteB;
+        callback(null, file.originalname);
+    }
+});
+var uploadFruta = multer({ storage: storage });
 
 //ORM
 var connStr = process.env.COMO_MYSQL_CONNSTR;
 var connection = mysql.createConnection(connStr);
-connection.connect(function(err) {if (err) {console.error('error connecting: ' + err.stack);return;}console.log('connected as id ' + connection.threadId);});
-var sequelize = new Sequelize(connStr, {define: {timestamps: false,freezeTableName: true}});
+connection.connect(function (err) { if (err) { console.error('error connecting: ' + err.stack); return; } console.log('connected as id ' + connection.threadId); });
+var sequelize = new Sequelize(connStr, { define: { timestamps: false, freezeTableName: true } });
 
 var Dica = sequelize.define('dica', {
-    idDica: {type: Sequelize.INTEGER,field:'idDIca',allowNull:false,primaryKey:true,autoIncrement:true},
-    nomeFruta: {type: Sequelize.STRING,field:'nomeFruta',allowNull:false},
-    descricao: {type: Sequelize.STRING,field:'descricao',allowNull:false},
-    nomeArquivo: { type: Sequelize.STRING,field:'nomeArquivo',allowNull:false}
-	}, 
-    { tableName: 'Dica' } 
+    idDica: { type: Sequelize.INTEGER, field: 'idDIca', allowNull: false, primaryKey: true, autoIncrement: true },
+    nomeFruta: { type: Sequelize.STRING, field: 'nomeFruta', allowNull: false },
+    descricao: { type: Sequelize.STRING, field: 'descricao', allowNull: false },
+    nomeArquivo: { type: Sequelize.STRING, field: 'nomeArquivo', allowNull: false }
+},
+    { tableName: 'Dica' }
 );
 
 // routes ============================================================
-app.post('/upload', upload.single('fruta'), function (req, res, next) {
+app.post('/upload', function (req, res) {
 
-	console.log('*** upload ***');
-    console.log('req.body');
-    console.log(req.body);
-    console.log('');
+    // var cache = [];
+    // var req2 = JSON.stringify(req, function (key, value) {
+    //     if (typeof value === 'object' && value !== null) {
+    //         if (cache.indexOf(value) !== -1) {
+    //             // Circular reference found, discard key
+    //             return;
+    //         }
+    //         // Store value in our collection
+    //         cache.push(value);
+    //     }
+    //     return value;
+    // });
+    // cache = null; // Enable garbage collection
+    //console.log('\r\n\r\n req2');
+    //console.log(req2);
 
-    res.json({});
-})
+    // create an incoming form object
+    var form = new formidable.IncomingForm();
+    form.multiples = false;
+    form.uploadDir = path.join(__dirname, '/public/uploads');
+    var tipo = "";
+
+    // every time a file has been uploaded successfully,
+    // rename it to it's orignal name
+    form.on('file', function (field, file) {
+        tipo = file.type == 'image/png' ? '.png' : file.type == 'image/jpeg' ? '.jpg' : file.type == 'image/jpg' ? '.jpg' : "";
+        fs.rename(file.path, path.join(form.uploadDir, file.name));
+    });
+
+    // log any errors that occur
+    form.on('error', function (err) {
+        console.log('An error has occured: \n' + err);
+    });
+
+    // once all the files have been uploaded, send a response to the client
+    form.on('end', function () {
+        //res.end('success');
+        res.redirect('/');
+    });
+
+
+    var nomeFruta = "";
+    var descricaoDica = "";
+    var nomeArquivo = "";
+
+    async
+        .series([
+            function parse(callback) {
+                console.log("ENTROU NA FUNCTION PARSE");
+
+                // parse the incoming request containing the form data
+                form.parse(req, function (err, fields, files) {
+                    nomeFruta = fields.nomeFruta;
+                    descricaoDica = fields.descricao;
+                    callback();
+                });
+            },
+            function salvar(callback) {
+                nomeArquivo = nomeFruta.toLowerCase() + tipo;
+
+                Dica.create({
+                    nomeFruta: nomeFruta,
+                    descricao: descricaoDica,
+                    nomeArquivo: nomeArquivo
+                }).then(function (dica) {
+                    callback();
+                });
+            }
+        ],
+        function (err) {
+            if (err != null) return res.status(500).send(err);
+
+            //res.redirect('/');
+        });
+});
+
+
 
 app.get('/api/obterdicas', function (req, res) {
-    console.log('********      obterdicas         ********');
+    //console.log('********      obterdicas         ********');
 
     Dica
         .findAll()
         .then(function (dicas) {
 
-            console.log('***************************************');
-            console.log('***     OBTENDO DICAS');
-        	console.log('***');
-        	console.log('***    ' + JSON.stringify(dicas));
-        	console.log('***');
-            console.log('***************************************');
+            //console.log('***************************************');
+            //console.log('***     OBTENDO DICAS');
+            //console.log('***');
+            //console.log('***    ' + JSON.stringify(dicas));
+            //console.log('***');
+            //console.log('***************************************');
 
             res.json(dicas);
         });
 });
 
-app.post('/api/salvardica', function (req, res) {
-	console.log(req.body);
-	
-	var proximoIdDica = dicas[dicas.length-1].frutaId + 1;
-	console.log(proximoIdDica);
-	dicas.push({frutaId: proximoIdDica, nome: req.body.nomeFruta, dica: req.body.dica, nomeArquivo: req.body.nomeArquivo});
+app.post('/api/obterdica', function (req, res) {
+    console.log('********      obterdica         ********');
 
-    res.send({ status: 'ok'});
+    var idDica = req.body.idDica;
+
+    Dica
+        .findAll({ where: { idDica: idDica } })
+        .then(function (dica) {
+
+            console.log('***************************************');
+            console.log('***     OBTENDO DICA');
+            console.log('***');
+            console.log('***    ' + JSON.stringify(dica));
+            console.log('***');
+            console.log('***************************************');
+
+            if (dica.length <= 0)
+                res.json({});
+
+            res.json(dica[0]);
+        });
 });
 
-app.get('/', function(req,res){
-    res.sendfile('./public/index.html'); 
+app.get('/', function (req, res) {
+    res.sendfile('./public/index.html');
 });
 
 app.get('/fetch', function (req, res) {
-    res.send({ status: 'ok'}); 
+    res.send({ status: 'ok' });
 });
 
-app.get('/api/imagens', function(req, res){
-    console.log(' - - - - - - - - imagens - - - - - - - - ');
-    
-    console.log('__dirname');
-    console.log(__dirname);
+app.get('/api/imagens', function (req, res) {
+    //console.log(' - - - - - - - - imagens - - - - - - - - ');
+
+    //console.log('__dirname');
+    //console.log(__dirname);
 
     var todasImagens = [];
 
     const fs = require('fs');
     fs.readdir(__dirname + '/public/uploads', (err, files) => {
 
-        console.log('TODOS OS ARQUIVOS DO DIRETORIO');console.log(files);console.log('');
+        //console.log('TODOS OS ARQUIVOS DO DIRETORIO');console.log(files);console.log('');
 
         async.series([
-            function filesForEach(callback){
+            function filesForEach(callback) {
 
                 files.forEach(file => {
                     var img = { caminhoArquivo: file };
-
-                    console.log('img');console.log(img);
-
+                    //console.log('img');console.log(img);
                     todasImagens.push(img);
                 });
                 callback();
-            }, 
-            function retorna(callback){
+            },
+            function retorna(callback) {
                 callback();
             }
-        ], 
-        function(err) { 
-            if (err != null) return res.status(500).send(err);
-            console.log('todasImagens');
-            console.log(todasImagens);
-            console.log('');
-            res.json(todasImagens);
-        });
+        ],
+            function (err) {
+                if (err != null) return res.status(500).send(err);
+                //console.log('todasImagens');
+                //console.log(todasImagens);
+                //console.log('');
+                res.json(todasImagens);
+            });
     });
 });
 

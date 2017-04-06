@@ -1,24 +1,29 @@
 <h2>Cadastro</h2>
-<form class="form-horizontal" action="/upload" method="POST">
+<form class="form-horizontal" action="/upload" method="POST" enctype="multipart/form-data">
 
     <div class="form-group">
         <label class="control-label col-sm-2" for="nome">Nome:</label>
         <div class="col-sm-10">
-            <input type="text" class="form-control" id="nome" placeholder="nome">
+            <input type="text" class="form-control" id="nome" placeholder="nome" ng-model="nomeFruta" name="nomeFruta">
         </div>
     </div>
 
     <div class="form-group">
         <label class="control-label col-sm-2" for="dica">Dica:</label>
         <div class="col-sm-10">
-            <textarea rows="4" cols="50" class="form-control" id="dica" placeholder="dica"></textarea>
+            <textarea rows="4" cols="50" class="form-control" id="dica" placeholder="dica" ng-model="descricao" name="descricao"></textarea>
         </div>
     </div>
 
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
-            <input type="file" name="imagem" value="imagem" id="imagem">
-            <label for="imagem">Escolha a imagem</label>
+            <span ng-if="edicao" class="animate-if">
+                <img ng-src="/uploads/{{ nomeArquivo }}" />
+            </span>
+            <span ng-if="!edicao" class="animate-if">
+                <input type="file" name="nomeArquivo" value="imagem" id="nomeArquivo" ng-model="nomeArquivo" >
+                <label for="imagem">Escolha a imagem</label>
+            </span>
         </div>
     </div>
 
