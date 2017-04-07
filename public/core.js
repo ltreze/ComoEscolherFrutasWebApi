@@ -9,33 +9,33 @@
             .when('/nova-dica', { templateUrl: 'pages/upsert.html', controller: 'homeController' })
             .when('/imagens', { templateUrl: 'pages/imagens.html', controller: 'homeController' })
             .when('/editar/:idDica', { templateUrl: 'pages/upsert.html', controller: 'homeController' })
-            .otherwise({redirectTo: '/'});
+            .otherwise({ redirectTo: '/' });
 
         $locationProvider
             .html5Mode(true);
     });
 
     app.controller('homeController', ['$scope', '$http', '$location', '$routeParams', function ($scope, $http, $location, $routeParams) {
-        
 
         //quando for edicao, obtem a dica pelo id
         if ($routeParams.idDica != null) {
             var idDica = $routeParams.idDica;
-            
+
             $scope.idDica = idDica;
             console.log('$routeParams.idDica');
             console.log($routeParams.idDica);
-            $http.post('/api/obterdica', { idDica: idDica})
+            $http
+                .post('/api/obterdica', { idDica: idDica })
                 .then(function successCallback(response) {
                     console.log('retorno da obtenção de dica');
                     console.log(response.data);
 
                     $scope.edicao = true;
-                    
+
                     $scope.descricao = response.data.descricao;
                     $scope.idDica = response.data.idDica;
                     $scope.nomeArquivo = response.data.nomeArquivo;
-                    $scope.nomeFruta = response.data.nomeFruta;                    
+                    $scope.nomeFruta = response.data.nomeFruta;
 
                 }, function erroCallback(response) {
                     console.log('Error');
@@ -65,6 +65,22 @@
             console.log('Error');
             console.log(response);
         });
+
+        console.log($scope.edicao);
+
+        $scope.deletar = function (idDica) {
+
+            $http
+                .post('/api/deletar', { idDica: idDica })
+                .then(function successCallback(response) {
+                    console.log('delete success');
+                    console.log(response);$location.path('/')
+                }, function erroCallback(response) {
+                    console.log('Error');
+                    console.log(response);
+                });
+
+        }
 
     }]);
 })();

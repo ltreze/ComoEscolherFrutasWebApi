@@ -34,7 +34,7 @@ connection.connect(function (err) { if (err) { console.error('error connecting: 
 var sequelize = new Sequelize(connStr, { define: { timestamps: false, freezeTableName: true } });
 
 var Dica = sequelize.define('dica', {
-    idDica: { type: Sequelize.INTEGER, field: 'idDIca', allowNull: false, primaryKey: true, autoIncrement: true },
+    idDica: { type: Sequelize.INTEGER, field: 'idDica', allowNull: false, primaryKey: true, autoIncrement: true },
     nomeFruta: { type: Sequelize.STRING, field: 'nomeFruta', allowNull: false },
     descricao: { type: Sequelize.STRING, field: 'descricao', allowNull: false },
     nomeArquivo: { type: Sequelize.STRING, field: 'nomeArquivo', allowNull: false }
@@ -112,11 +112,11 @@ app.post('/upload', function (req, res) {
                     descricao: descricaoDica,
                     nomeArquivo: nomeArquivo
                 } : {
-                    idDica: idDica,
-                    nomeFruta: nomeFruta,
-                    descricao: descricaoDica,
-                    nomeArquivo: nomeArquivo
-                };
+                        idDica: idDica,
+                        nomeFruta: nomeFruta,
+                        descricao: descricaoDica,
+                        nomeArquivo: nomeArquivo
+                    };
 
                 Dica.upsert(objeto).then(function (dica) {
                     callback();
@@ -146,6 +146,21 @@ app.get('/api/obterdicas', function (req, res) {
 
             res.json(dicas);
         });
+});
+
+app.post('/api/deletar', function (req, res) {
+    console.log('\r\n\r\n********      deletar dica         ********');
+
+    var idDica = req.body.idDica;
+    console.log('idDica: ' + idDica);
+
+    Dica
+        .destroy({ where: { idDica: idDica } })
+        .then(function () {
+            //req.session.valid = true;
+            res.redirect('/');
+        });
+
 });
 
 app.post('/api/obterdica', function (req, res) {
