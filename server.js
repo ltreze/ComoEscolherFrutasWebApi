@@ -58,46 +58,34 @@ app.post('/upload', function (req, res) {
     //     return value;
     // });
     // cache = null; // Enable garbage collection
-    //console.log('\r\n\r\n req2');
-    //console.log(req2);
+    // console.log('\r\n\r\n req2');
+    // console.log(req2);
 
     // create an incoming form object
     var form = new formidable.IncomingForm();
     form.multiples = false;
     form.uploadDir = path.join(__dirname, '/public/uploads');
-    var tipo = "";
+    var nomeArquivoUpload = "";
+    var nomePastaUpload = "";
 
-    // every time a file has been uploaded successfully,
-    // rename it to it's orignal name
     form.on('file', function (field, file) {
         tipo = file.type == 'image/png' ? '.png' : file.type == 'image/jpeg' ? '.jpg' : file.type == 'image/jpg' ? '.jpg' : "";
-        fs.rename(file.path, path.join(form.uploadDir, file.name));
+        nomeArquivoUpload = file.path;
+        nomePastaUpload = form.uploadDir;
     });
-
-    // log any errors that occur
-    form.on('error', function (err) {
-        console.log('An error has occured: \n' + err);
-    });
-
-    // once all the files have been uploaded, send a response to the client
-    form.on('end', function () {
-        //res.end('success');
-        res.redirect('/');
-    });
+    form.on('error', function (err) { console.log('An error has occured: \n' + err); });
+    form.on('end', function () { });
 
     var idDica = 0;
     var nomeFruta = "";
     var descricaoDica = "";
     var nomeArquivo = "";
+    var tipo = "";
 
     async
         .series([
             function parse(callback) {
-                console.log("ENTROU NA FUNCTION PARSE");
-
-                // parse the incoming request containing the form data
                 form.parse(req, function (err, fields, files) {
-                    console.log(fields);
                     nomeFruta = fields.nomeFruta;
                     descricaoDica = fields.descricao;
                     idDica = fields.idDica;
@@ -107,43 +95,29 @@ app.post('/upload', function (req, res) {
             function salvar(callback) {
                 nomeArquivo = nomeFruta.toLowerCase() + tipo;
 
-                var objeto = idDica == 0 ? {
-                    nomeFruta: nomeFruta,
-                    descricao: descricaoDica,
-                    nomeArquivo: nomeArquivo
-                } : {
-                        idDica: idDica,
-                        nomeFruta: nomeFruta,
-                        descricao: descricaoDica,
-                        nomeArquivo: nomeArquivo
-                    };
+                var objeto = idDica == 0 ? { nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo } :
+                    { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo };
 
                 Dica.upsert(objeto).then(function (dica) {
+                    fs.rename(nomeArquivoUpload, nomePastaUpload + '/' + nomeArquivo);
                     callback();
                 });
             }
         ],
         function (err) {
-            if (err != null) return res.status(500).send(err);
+            if (err != null) {
+                return res.status(500).send(err);
+            }
 
-            //res.redirect('/');
+            res.redirect('/');
         });
 });
 
 app.get('/api/obterdicas', function (req, res) {
-    //console.log('********      obterdicas         ********');
 
     Dica
         .findAll()
         .then(function (dicas) {
-
-            //console.log('***************************************');
-            //console.log('***     OBTENDO DICAS');
-            //console.log('***');
-            //console.log('***    ' + JSON.stringify(dicas));
-            //console.log('***');
-            //console.log('***************************************');
-
             res.json(dicas);
         });
 });
@@ -155,13 +129,36 @@ app.post('/api/deletar', function (req, res) {
     console.log('idDica: ' + idDica);
 
     Dica
-        .destroy({ where: { idDica: idDica } })
-        .then(function () {
-            //req.session.valid = true;
-            res.redirect('/');
+        .findAll({ where: { idDica: idDica } })
+        .then(function (dica) {
+
+            var dicaEncontrada = dica[0];
+            console.log(dicaEncontrada);
+
+            Dica
+                .destroy({ where: { idDica: idDica } })
+                .then(function () {
+                    //req.session.valid = true;
+                    res.redirect('/');
+                });
         });
 
 });
+
+// app.post('/api/deletar', function (req, res) {
+//     console.log('\r\n\r\n********      deletar dica         ********');
+
+//     var idDica = req.body.idDica;
+//     console.log('idDica: ' + idDica);
+
+//     Dica
+//         .destroy({ where: { idDica: idDica } })
+//         .then(function () {
+//             //req.session.valid = true;
+//             res.redirect('/');
+//         });
+
+// });
 
 app.post('/api/obterdica', function (req, res) {
     console.log('********      obterdica         ********');

@@ -82,5 +82,26 @@
 
         }
 
+        // $scope.cadastrar = function(){
+
+        //     $http
+        //         .post('/api/upload', { idDica: idDica })
+        //         .then(function successCallback(response) {
+        //             console.log('retorno da obtenção de dica');
+        //             console.log(response.data);
+
+        //             $scope.edicao = true;
+
+        //             $scope.descricao = response.data.descricao;
+        //             $scope.idDica = response.data.idDica;
+        //             $scope.nomeArquivo = response.data.nomeArquivo;
+        //             $scope.nomeFruta = response.data.nomeFruta;
+
+        //         }, function erroCallback(response) {
+        //             console.log('Error');
+        //             console.log(response);
+        //         });
+        // }
+
     }]);
 })();
