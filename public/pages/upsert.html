@@ -19,13 +19,15 @@
 
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
-            <span ng-if="edicao" class="animate-if">
+            <span ng-show="edicao" class="animate-if">
                 <img ng-src="/uploads/{{ nomeArquivo }}" />
-            </span>
-            <!--<span ng-if="!edicao" class="animate-if">-->
                 <input type="file" name="nomeArquivo" value="imagem" id="nomeArquivo" ng-model="nomeArquivo" accept="image/*" >
                 <label for="imagem">Escolha a imagem</label>
-            <!--</span>-->
+            </span>
+            <span ng-show="!edicao" class="animate-if">
+                <input type="file" name="nomeArquivo" value="imagem" id="nomeArquivo" ng-model="nomeArquivo" accept="image/*" >
+                <label for="imagem">Escolha a imagem</label>
+            </span>
         </div>
     </div>
 

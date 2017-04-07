@@ -94,14 +94,49 @@ app.post('/upload', function (req, res) {
             },
             function salvar(callback) {
                 nomeArquivo = nomeFruta.toLowerCase() + tipo;
+                var cadastrar = idDica == 0;
 
-                var objeto = idDica == 0 ? { nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo } :
-                    { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo };
+                if (cadastrar) {
+                    var objeto = { nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo };
+                    Dica.create(objeto).then(function (dica) {
+                        //var dicaCriada = JSON.stringify(dica);
 
-                Dica.upsert(objeto).then(function (dica) {
-                    fs.rename(nomeArquivoUpload, nomePastaUpload + '/' + nomeArquivo);
-                    callback();
-                });
+                        console.log('****!! dica');
+                        console.log(JSON.stringify(dica));
+
+                        var nomeArquivoPad = String("00000" + dica.idDica).slice(-6);
+
+                        console.log('****%% nomeArquivoPad');
+                        console.log(nomeArquivoPad);
+
+                        var nomeArquivoPadTipo = nomeArquivoPad + tipo;
+                        var nomeFinal = nomePastaUpload + '\\' + nomeArquivoPadTipo;
+                        fs.renameSync(nomeArquivoUpload, nomeFinal);
+
+                        console.log('**** nomeArquivoPadTipo');
+                        console.log(nomeArquivoPadTipo);
+                        dica.nomeArquivo = nomeArquivoPadTipo;
+
+                        console.log('**** dica');
+                        console.log(JSON.stringify(dica));
+
+
+                        dica
+                            .updateAttributes({ nomeArquivo: nomeArquivoPadTipo })
+                            .then(function () {
+                                console.log('****!!!!!!!!!!!!!!!!!!!!!!'); callback();
+                            });
+                    });
+                } else {
+                    var objeto = { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo };
+
+                    Dica.upsert(objeto).then(function (dica) {
+                        console.log('**** dica');
+                        console.log(dica);
+                        fs.renameSync(nomeArquivoUpload, nomePastaUpload + '/' + nomeArquivo);
+                        callback();
+                    });
+                }
             }
         ],
         function (err) {
