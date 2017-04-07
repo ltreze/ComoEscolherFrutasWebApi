@@ -22,18 +22,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 //configuracoes de upload
 var storage = multer.diskStorage({
-    destination: function (req, file, callback) {
-        //console.log('STORAGE > DESTINATION'); console.log(req.body); console.log('');
-        callback(null, './uploads');
-    },
-    filename: function (req, file, callback) {
-        //console.log('STORAGE > FILENAME'); console.log(file); console.log('');
-        //console.log('req.body'); console.log(req.body); console.log('');
-        //var usuarioId = file.originalname.split('.')[0];
-        //var parteB = file.originalname.split('.')[file.originalname.split('.').length - 1];
-        //var nomeArquivo = file.fieldname + '_' + usuarioId + '_' + Date.now() + '.' + parteB;
-        callback(null, file.originalname);
-    }
+    destination: function (req, file, callback) { callback(null, './uploads'); },
+    filename: function (req, file, callback) { callback(null, file.originalname); }
 });
 var uploadFruta = multer({ storage: storage });
 
@@ -95,7 +85,7 @@ app.post('/upload', function (req, res) {
         res.redirect('/');
     });
 
-
+    var idDica = 0;
     var nomeFruta = "";
     var descricaoDica = "";
     var nomeArquivo = "";
@@ -107,19 +97,28 @@ app.post('/upload', function (req, res) {
 
                 // parse the incoming request containing the form data
                 form.parse(req, function (err, fields, files) {
+                    console.log(fields);
                     nomeFruta = fields.nomeFruta;
                     descricaoDica = fields.descricao;
+                    idDica = fields.idDica;
                     callback();
                 });
             },
             function salvar(callback) {
                 nomeArquivo = nomeFruta.toLowerCase() + tipo;
 
-                Dica.create({
+                var objeto = idDica == 0 ? {
                     nomeFruta: nomeFruta,
                     descricao: descricaoDica,
                     nomeArquivo: nomeArquivo
-                }).then(function (dica) {
+                } : {
+                    idDica: idDica,
+                    nomeFruta: nomeFruta,
+                    descricao: descricaoDica,
+                    nomeArquivo: nomeArquivo
+                };
+
+                Dica.upsert(objeto).then(function (dica) {
                     callback();
                 });
             }
@@ -130,8 +129,6 @@ app.post('/upload', function (req, res) {
             //res.redirect('/');
         });
 });
-
-
 
 app.get('/api/obterdicas', function (req, res) {
     //console.log('********      obterdicas         ********');

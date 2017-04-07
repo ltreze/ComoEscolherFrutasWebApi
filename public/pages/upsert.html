@@ -1,5 +1,7 @@
 <h2>Cadastro</h2>
 <form class="form-horizontal" action="/upload" method="POST" enctype="multipart/form-data">
+    
+    <input type="hidden" name="idDica" id="idDica" ng-value="idDica" />
 
     <div class="form-group">
         <label class="control-label col-sm-2" for="nome">Nome:</label>
@@ -29,7 +31,7 @@
 
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
-            <button type="submit" class="btn btn-default">Cadastrar</button>
+            <button type="submit" class="btn btn-default">{{ editar ? "Atualizar" : "Cadastrar" }}</button>
         </div>
     </div>
 </form>

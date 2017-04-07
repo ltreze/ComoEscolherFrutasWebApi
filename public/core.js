@@ -17,13 +17,14 @@
 
     app.controller('homeController', ['$scope', '$http', '$location', '$routeParams', function ($scope, $http, $location, $routeParams) {
         
+
+        //quando for edicao, obtem a dica pelo id
         if ($routeParams.idDica != null) {
             var idDica = $routeParams.idDica;
             
             $scope.idDica = idDica;
             console.log('$routeParams.idDica');
             console.log($routeParams.idDica);
-
             $http.post('/api/obterdica', { idDica: idDica})
                 .then(function successCallback(response) {
                     console.log('retorno da obtenção de dica');
@@ -41,6 +42,7 @@
                     console.log(response);
                 });
         }
+        $scope.edicao = false;
 
         $http({
             method: 'GET',
@@ -65,6 +67,4 @@
         });
 
     }]);
-
-
 })();
