@@ -66,7 +66,7 @@
             console.log(response);
         });
 
-        console.log($scope.edicao);
+        //console.log($scope.edicao);
 
         $scope.deletar = function (idDica) {
 
