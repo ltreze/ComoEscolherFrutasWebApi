@@ -117,7 +117,7 @@ app.post('/upload', function (req, res) {
 
                         tipo = sampleFile.mimetype == 'image/png' ? '.png' : sampleFile.mimetype == 'image/jpeg' ? '.jpg' : sampleFile.mimetype == 'image/jpg' ? '.jpg' : "";
                         nomeArquivo = nomeFruta.toLowerCase() + tipo;
-                        
+
                         var posicao = nomeArquivoUpload.indexOf(sampleFile.name);
                         nomePastaUpload = nomeArquivoUpload.substring(0, posicao);
 
@@ -132,17 +132,17 @@ app.post('/upload', function (req, res) {
                 if (cadastrar) {
                     var objeto = { nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo };
                     Dica.create(objeto).then(function (dica) {
-                        
-                        
+
+
                         //comeco obter nome Arquivo
-//                        var nomeArquivoPad = ;
+                        //                        var nomeArquivoPad = ;
                         var nomeArquivoPadTipo = String("00000" + dica.idDica).slice(-6) + tipo;
                         nomeFinal = nomePastaUpload + '\\' + nomeArquivoPadTipo;
 
-                                            fs.rename(nomeArquivoUpload, nomeFinal, function (res) {
-                                                console.log('callback rename');
-                                                console.log(res);
-                                            });
+                        fs.rename(nomeArquivoUpload, nomeFinal, function (res) {
+                            console.log('callback rename');
+                            console.log(res);
+                        });
 
                         console.log('\r\n**** nomeArquivoPadTipo');
                         console.log(nomeArquivoPadTipo);
@@ -166,7 +166,7 @@ app.post('/upload', function (req, res) {
                     console.log(nomeArquivo);
 
                     if (temArquivo) {
-                        objeto = { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo:  nomeArquivo };
+                        objeto = { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo };
                     } else {
                         objeto = { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica };
                     }
@@ -175,7 +175,7 @@ app.post('/upload', function (req, res) {
                     console.log(objeto);
 
                     Dica
-                        .update(objeto, { where: {idDica: idDica }})
+                        .update(objeto, { where: { idDica: idDica } })
                         .then(function (dica) {
                             //console.log('**** UPSERT ');
                             //console.log('**** dica');
@@ -394,6 +394,45 @@ app.get('/api/obterdicas', function (req, res) {
         .then(function (dicas) {
             res.json(dicas);
         });
+});
+
+app.post('/api/obterimagem', function (req, res) {
+
+    var id = req.body.idDica;
+    console.log('id'); console.log(id);
+
+    var idImg = String("00000" + id).slice(-6);
+    console.log('idImg'); console.log(idImg);
+
+    var todasImagens = [];
+
+    const fs = require('fs');
+    fs.readdir(__dirname + '/public/uploads', (err, files) => {
+
+        //console.log('TODOS OS ARQUIVOS DO DIRETORIO');console.log(files);console.log('');
+
+        //async.series([
+        //  function filesForEach(callback) {
+
+        files.forEach(file => {
+            //var img = { caminhoArquivo: file };
+            console.log('img'); console.log(file);
+            //todasImagens.push(img);
+        });
+        //    callback();
+        //},
+        //function retorna(callback) {
+        //   callback();
+        // }
+        //],
+        //   function (err) {
+        //      if (err != null) return res.status(500).send(err);
+        //console.log('todasImagens');
+        //console.log(todasImagens);
+        //console.log('');
+        //     res.json(todasImagens);
+        // });
+    });
 });
 
 app.post('/api/deletar', function (req, res) {
