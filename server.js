@@ -417,6 +417,7 @@ app.post('/api/obterimagem', function (req, res) {
         files.forEach(file => {
             //var img = { caminhoArquivo: file };
             console.log('img'); console.log(file);
+            var nomeImg = file.split
             //todasImagens.push(img);
         });
         //    callback();
