@@ -41,7 +41,9 @@ var Dica = sequelize.define('dica', {
     idDica: { type: Sequelize.INTEGER, field: 'idDica', allowNull: false, primaryKey: true, autoIncrement: true },
     nomeFruta: { type: Sequelize.STRING, field: 'nomeFruta', allowNull: false },
     descricao: { type: Sequelize.STRING, field: 'descricao', allowNull: false },
-    nomeArquivo: { type: Sequelize.STRING, field: 'nomeArquivo', allowNull: false }
+    nomeArquivo: { type: Sequelize.STRING, field: 'nomeArquivo', allowNull: false },
+    imagem: { type: Sequelize.BLOB, field: 'imagem', allowNull: false },
+    hash: { type: Sequelize.STRING, field: 'hash', allowNull: false }
 },
     { tableName: 'Dica' }
 );
@@ -63,9 +65,20 @@ function createUUID() {
 }
 
 // routes ============================================================
-app.post('/upload', function (req, res) {
+app.post('/api/uploadtemp', function (req, res) {
     if (!req.files)
         return res.status(400).send('No files were uploaded.');
+
+    console.log(req.files.asdqwe.data);
+
+    res.send(200);
+
+});
+
+// routes ============================================================
+app.post('/upload', function (req, res) {
+    if (!req.files)
+        return res.status(400).send('No files were uploaded.'); 
 
     print(req.body);
 
@@ -100,7 +113,7 @@ app.post('/upload', function (req, res) {
 
     async
         .series([
-            function persistir(callback) {
+            function salvarImagem(callback) {
                 // Use the mv() method to place the file somewhere on your server 
 
                 //console.log('\r\n**** __dirname');
@@ -127,12 +140,12 @@ app.post('/upload', function (req, res) {
                     callback();
                 }
             },
-            function salvar(callback) {
+            function persistir(callback) {
 
                 if (cadastrar) {
-                    var objeto = { nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo };
+                    var guid = createUUID();
+                    var objeto = { nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo, hash: guid };
                     Dica.create(objeto).then(function (dica) {
-
 
                         //comeco obter nome Arquivo
                         //                        var nomeArquivoPad = ;
@@ -165,10 +178,12 @@ app.post('/upload', function (req, res) {
                     console.log("\r\n**** nomeArquivoo");
                     console.log(nomeArquivo);
 
+                    var guid = createUUID();
+
                     if (temArquivo) {
-                        objeto = { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica, nomeArquivo: nomeArquivo };
+                        objeto = { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica, hash: guid, nomeArquivo: nomeArquivo };
                     } else {
-                        objeto = { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica };
+                        objeto = { idDica: idDica, nomeFruta: nomeFruta, descricao: descricaoDica, hash: guid, };
                     }
 
                     console.log("\r\n**** objeto");
@@ -187,7 +202,7 @@ app.post('/upload', function (req, res) {
                             //console.log(nomePastaUpload);
                             //console.log('**** nomeFinal');
                             nomeFinal = nomePastaUpload + '\\' + nomeArquivo;
-                            //console.log(nomeFinal);
+                            //console.log(nomeFinal); 
 
                             fs.rename(nomeArquivoUpload, nomeFinal, function (res) {
                                 console.log('callback rename');
